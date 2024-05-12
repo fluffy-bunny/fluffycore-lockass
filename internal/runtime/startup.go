@@ -9,13 +9,9 @@ import (
 	contracts_config "github.com/fluffy-bunny/fluffycore-lockaas/internal/contracts/config"
 	myechoserver "github.com/fluffy-bunny/fluffycore-lockaas/internal/myechoserver"
 	services "github.com/fluffy-bunny/fluffycore-lockaas/internal/services"
-	services_greeter "github.com/fluffy-bunny/fluffycore-lockaas/internal/services/greeter"
 	services_health "github.com/fluffy-bunny/fluffycore-lockaas/internal/services/health"
 	services_lockaas "github.com/fluffy-bunny/fluffycore-lockaas/internal/services/lockaas"
-	services_slockclient "github.com/fluffy-bunny/fluffycore-lockaas/internal/services/lockclient"
-	services_mystream "github.com/fluffy-bunny/fluffycore-lockaas/internal/services/mystream"
-	services_somedisposable "github.com/fluffy-bunny/fluffycore-lockaas/internal/services/somedisposable"
-
+	services_lockclient "github.com/fluffy-bunny/fluffycore-lockaas/internal/services/lockclient"
 	internal_version "github.com/fluffy-bunny/fluffycore-lockaas/internal/version"
 	fluffycore_async "github.com/fluffy-bunny/fluffycore/async"
 	fluffycore_contracts_ddprofiler "github.com/fluffy-bunny/fluffycore/contracts/ddprofiler"
@@ -107,11 +103,8 @@ func (s *startup) ConfigureServices(ctx context.Context, builder di.ContainerBui
 	services.ConfigureServices(builder)
 	fluffycore_services_ddprofiler.AddSingletonIProfiler(builder)
 	services_health.AddHealthService(builder)
-	services_greeter.AddGreeterService(builder)
 	services_lockaas.AddLockaasService(builder)
-	services_somedisposable.AddScopedSomeDisposable(builder)
-	services_slockclient.AddSingletonLockClient(builder)
-	services_mystream.AddMyStreamService(builder)
+	services_lockclient.AddSingletonLockClient(builder)
 	issuerConfigs := &fluffycore_contracts_middleware_auth_jwt.IssuerConfigs{}
 	for idx := range s.config.JWTValidators.Issuers {
 		issuerConfigs.IssuerConfigs = append(issuerConfigs.IssuerConfigs,

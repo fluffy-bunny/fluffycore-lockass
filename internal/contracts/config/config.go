@@ -29,8 +29,6 @@ type Config struct {
 	fluffycore_contracts_config.CoreConfig `mapstructure:",squash"`
 
 	ConfigFiles      ConfigFiles                             `json:"configFiles"`
-	CustomString     string                                  `json:"customString"`
-	SomeSecret       string                                  `json:"someSecret" redact:"true"`
 	OAuth2Port       int                                     `json:"oauth2Port"`
 	JWTValidators    JWTValidators                           `json:"jwtValidators"`
 	DDProfilerConfig *fluffycore_contracts_ddprofiler.Config `json:"ddProfilerConfig"`
@@ -48,8 +46,6 @@ var ConfigDefaultJSON = []byte(`
 	"PORT": 50051,
 	"REST_PORT": 50052,
 	"oauth2Port": 50053,
-	"customString": "some default value",
-	"someSecret": "password",
 	"GRPC_GATEWAY_ENABLED": true,
 	"jwtValidators": {},
 	"mongoConfig": {
