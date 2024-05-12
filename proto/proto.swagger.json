@@ -1,15 +1,12 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "proto/helloworld/helloworld.proto",
+    "title": "proto/lockaas/lockaas.proto",
     "version": "version not set"
   },
   "tags": [
     {
-      "name": "Greeter"
-    },
-    {
-      "name": "MyStreamService"
+      "name": "Lockaas"
     }
   ],
   "consumes": [
@@ -19,21 +16,21 @@
     "application/json"
   ],
   "paths": {
-    "/v1/example/echo": {
+    "/v1/lockaas/exclusive-lock": {
       "post": {
-        "summary": "Sends a greeting",
-        "operationId": "Greeter_SayHello",
+        "summary": "ExclusiveLock",
+        "operationId": "Lockaas_ExclusiveLock",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/helloworldHelloReply"
+              "$ref": "#/definitions/helloworldExclusiveLockResponse"
             }
           },
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/rpcStatus"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -44,161 +41,150 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/helloworldHelloRequest"
+              "$ref": "#/definitions/helloworldExclusiveLockRequest"
             }
           }
         ],
         "tags": [
-          "Greeter"
+          "Lockaas"
         ]
       }
     },
-    "/v1/mystreamservice/request-points": {
+    "/v1/lockaas/renew": {
       "post": {
-        "summary": "RequestPoints\nRequest: Unary\nResponse: Streaming",
-        "operationId": "MyStreamService_RequestPoints",
-        "responses": {
-          "200": {
-            "description": "A successful response.(streaming responses)",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "result": {
-                  "$ref": "#/definitions/helloworldPoint"
-                },
-                "error": {
-                  "$ref": "#/definitions/rpcStatus"
-                }
-              },
-              "title": "Stream result of helloworldPoint"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/helloworldPointsRequest"
-            }
-          }
-        ],
-        "tags": [
-          "MyStreamService"
-        ]
-      }
-    },
-    "/v1/mystreamservice/upload-points": {
-      "post": {
-        "summary": "Accepts a stream of Points on a route being traversed, returning a\nRouteSummary when traversal is completed.",
-        "operationId": "MyStreamService_StreamPoints",
+        "summary": "Renew",
+        "operationId": "Lockaas_Renew",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/helloworldRouteSummary"
+              "$ref": "#/definitions/helloworldRenewResponse"
             }
           },
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/rpcStatus"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
         "parameters": [
           {
             "name": "body",
-            "description": "Points are represented as latitude-longitude pairs in the E7 representation\n(degrees multiplied by 10**7 and rounded to the nearest integer).\nLatitudes should be in the range +/- 90 degrees and longitude should be in\nthe range +/- 180 degrees (inclusive). (streaming inputs)",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/helloworldPoint"
+              "$ref": "#/definitions/helloworldRenewRequest"
             }
           }
         ],
         "tags": [
-          "MyStreamService"
+          "Lockaas"
+        ]
+      }
+    },
+    "/v1/lockaas/shared-lock": {
+      "post": {
+        "summary": "SharedLock",
+        "operationId": "Lockaas_SharedLock",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/helloworldSharedLockResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/helloworldSharedLockRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Lockaas"
+        ]
+      }
+    },
+    "/v1/lockaas/status": {
+      "post": {
+        "summary": "Status",
+        "operationId": "Lockaas_Status",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/helloworldStatusResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/helloworldStatusRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Lockaas"
+        ]
+      }
+    },
+    "/v1/lockaas/unlock": {
+      "post": {
+        "summary": "Unlock",
+        "operationId": "Lockaas_Unlock",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/helloworldUnlockResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/helloworldUnlockRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Lockaas"
         ]
       }
     }
   },
   "definitions": {
-    "helloworldHelloReply": {
-      "type": "object",
-      "properties": {
-        "message": {
-          "type": "string"
-        }
-      },
-      "title": "The response message containing the greetings"
-    },
-    "helloworldHelloRequest": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        }
-      },
-      "description": "The request message containing the user's name."
-    },
-    "helloworldPoint": {
-      "type": "object",
-      "properties": {
-        "latitude": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "longitude": {
-          "type": "integer",
-          "format": "int32"
-        }
-      },
-      "description": "Points are represented as latitude-longitude pairs in the E7 representation\n(degrees multiplied by 10**7 and rounded to the nearest integer).\nLatitudes should be in the range +/- 90 degrees and longitude should be in\nthe range +/- 180 degrees (inclusive)."
-    },
-    "helloworldPointsRequest": {
-      "type": "object",
-      "properties": {
-        "points": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "helloworldRouteSummary": {
-      "type": "object",
-      "properties": {
-        "pointCount": {
-          "type": "integer",
-          "format": "int32",
-          "description": "The number of points received."
-        },
-        "elapsedTime": {
-          "type": "integer",
-          "format": "int32",
-          "description": "The duration of the traversal in seconds."
-        }
-      }
-    },
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "@type": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": {}
-    },
-    "rpcStatus": {
+    "googlerpcStatus": {
       "type": "object",
       "properties": {
         "code": {
@@ -216,6 +202,222 @@
           }
         }
       }
+    },
+    "helloworldExclusiveLockRequest": {
+      "type": "object",
+      "properties": {
+        "resourceName": {
+          "type": "string"
+        },
+        "lockId": {
+          "type": "string"
+        },
+        "lockDetails": {
+          "$ref": "#/definitions/helloworldLockDetails"
+        }
+      },
+      "description": "The request message containing the user's name."
+    },
+    "helloworldExclusiveLockResponse": {
+      "type": "object"
+    },
+    "helloworldFilter": {
+      "type": "object",
+      "properties": {
+        "createdBefore": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Only include locks created before this time."
+        },
+        "createdAfter": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Only include locks created after this time."
+        },
+        "tTLlt": {
+          "type": "string",
+          "format": "int64",
+          "description": "Only include locks with a TTL less than this value, in seconds."
+        },
+        "tTLgte": {
+          "type": "string",
+          "format": "int64",
+          "description": "Only include locks with a TTL greater than or equal to this value, in seconds."
+        },
+        "resource": {
+          "type": "string",
+          "description": "Only include locks on this resource."
+        },
+        "lockId": {
+          "type": "string",
+          "description": "Only include locks with this lockId."
+        },
+        "owner": {
+          "type": "string",
+          "description": "Only include locks with this owner."
+        }
+      }
+    },
+    "helloworldLockDetails": {
+      "type": "object",
+      "properties": {
+        "owner": {
+          "type": "string",
+          "description": "The user that is creating the lock."
+        },
+        "host": {
+          "type": "string",
+          "description": "The host that the lock is being created from."
+        },
+        "comment": {
+          "type": "string",
+          "description": "Comment to add context for the lock."
+        },
+        "tTLSeconds": {
+          "type": "string",
+          "format": "int64",
+          "description": "The time to live (TTL) for the lock, in seconds. Setting this to 0\nmeans that the lock will not have a TTL."
+        }
+      },
+      "description": "LockDetails contains fields that are used when creating a lock."
+    },
+    "helloworldLockStatus": {
+      "type": "object",
+      "properties": {
+        "resouce": {
+          "type": "string",
+          "description": "The name of the resource that the lock is on."
+        },
+        "lockId": {
+          "type": "string",
+          "description": "The id of the lock."
+        },
+        "type": {
+          "type": "string",
+          "title": "The type of the lock (\"exclusive\" or \"shared\")"
+        },
+        "owner": {
+          "type": "string",
+          "description": "The name of the user who created the lock."
+        },
+        "host": {
+          "type": "string",
+          "description": "The host that the lock was created from."
+        },
+        "comment": {
+          "type": "string",
+          "description": "Comment to add context for the lock."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The time that the lock was created at."
+        },
+        "renewedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The time that the lock was renewed at, if applicable."
+        },
+        "tTLSeconds": {
+          "type": "string",
+          "format": "int64",
+          "description": "The TTL for the lock, in seconds. A negative value means that the\nlock does not have a TTL."
+        }
+      }
+    },
+    "helloworldRenewRequest": {
+      "type": "object",
+      "properties": {
+        "lockId": {
+          "type": "string"
+        },
+        "tTLSeconds": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "helloworldRenewResponse": {
+      "type": "object",
+      "properties": {
+        "lockStatus": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/helloworldLockStatus"
+          }
+        }
+      }
+    },
+    "helloworldSharedLockRequest": {
+      "type": "object",
+      "properties": {
+        "resourceName": {
+          "type": "string"
+        },
+        "lockId": {
+          "type": "string"
+        },
+        "lockDetails": {
+          "$ref": "#/definitions/helloworldLockDetails"
+        },
+        "maxConcurrent": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "helloworldSharedLockResponse": {
+      "type": "object"
+    },
+    "helloworldStatusRequest": {
+      "type": "object",
+      "properties": {
+        "filter": {
+          "$ref": "#/definitions/helloworldFilter"
+        }
+      }
+    },
+    "helloworldStatusResponse": {
+      "type": "object",
+      "properties": {
+        "lockStatus": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/helloworldLockStatus"
+          }
+        }
+      }
+    },
+    "helloworldUnlockRequest": {
+      "type": "object",
+      "properties": {
+        "lockId": {
+          "type": "string"
+        }
+      }
+    },
+    "helloworldUnlockResponse": {
+      "type": "object",
+      "properties": {
+        "lockStatus": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/helloworldLockStatus"
+          }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
     }
   }
 }

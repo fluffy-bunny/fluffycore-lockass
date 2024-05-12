@@ -11,6 +11,7 @@ import (
 	services "github.com/fluffy-bunny/fluffycore-lockaas/internal/services"
 	services_greeter "github.com/fluffy-bunny/fluffycore-lockaas/internal/services/greeter"
 	services_health "github.com/fluffy-bunny/fluffycore-lockaas/internal/services/health"
+	services_lockaas "github.com/fluffy-bunny/fluffycore-lockaas/internal/services/lockaas"
 	services_slockclient "github.com/fluffy-bunny/fluffycore-lockaas/internal/services/lockclient"
 	services_mystream "github.com/fluffy-bunny/fluffycore-lockaas/internal/services/mystream"
 	services_somedisposable "github.com/fluffy-bunny/fluffycore-lockaas/internal/services/somedisposable"
@@ -107,6 +108,7 @@ func (s *startup) ConfigureServices(ctx context.Context, builder di.ContainerBui
 	fluffycore_services_ddprofiler.AddSingletonIProfiler(builder)
 	services_health.AddHealthService(builder)
 	services_greeter.AddGreeterService(builder)
+	services_lockaas.AddLockaasService(builder)
 	services_somedisposable.AddScopedSomeDisposable(builder)
 	services_slockclient.AddSingletonLockClient(builder)
 	services_mystream.AddMyStreamService(builder)

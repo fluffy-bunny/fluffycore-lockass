@@ -7,7 +7,7 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-lockaas/internal/contracts/config"
-	contracts_mongo "github.com/fluffy-bunny/fluffycore-lockaas/internal/contracts/lockclient"
+	contracts_lockclient "github.com/fluffy-bunny/fluffycore-lockaas/internal/contracts/lockclient"
 	mongo_lock "github.com/square/mongo-lock"
 	driver_mongo "go.mongodb.org/mongo-driver/mongo"
 	options "go.mongodb.org/mongo-driver/mongo/options"
@@ -25,12 +25,12 @@ type (
 )
 
 func init() {
-	var _ contracts_mongo.IMongoLockClient = (*service)(nil)
+	var _ contracts_lockclient.IMongoLockClient = (*service)(nil)
 }
 
 func AddSingletonLockClient(cb di.ContainerBuilder) {
-	di.AddSingleton[contracts_mongo.IMongoLockClient](cb,
-		func(config *contracts_config.Config) contracts_mongo.IMongoLockClient {
+	di.AddSingleton[contracts_lockclient.IMongoLockClient](cb,
+		func(config *contracts_config.Config) contracts_lockclient.IMongoLockClient {
 			return &service{
 				config: config,
 			}
