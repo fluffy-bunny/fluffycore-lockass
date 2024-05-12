@@ -1,19 +1,19 @@
 version: "3.8"
 
 services:
-  starterkit:
-    container_name: starterkit
+  lockaas:
+    container_name: lockaas
     extends:
       file: ./docker-compose-common.yml
       service: micro
-    image: fluffycore.starterkit:latest
+    image: fluffycore.lockaas:latest
     ports:
       - "50051:50051"
       - "50052:50052"
       - "50053:50053"
       - "9044:9044"
     environment:
-      APPLICATION_NAME: "starterkit"
+      APPLICATION_NAME: "lockaas"
       APPLICATION_ENVIRONMENT: "DOCKER"
       LOG_LEVEL": "debug"
       PRETTY_LOG: "true"
@@ -24,8 +24,8 @@ services:
       customString: "In Flames"
       someSecret: "1234567890"
       ENABLE_GRPC_SERVER_REFLECTION: "true"
-      jwtValidators__issuers: "http://starterkit:50053"
-      jwtValidators__jwksUrls: "http://starterkit:50053/.well-known/jwks"
+      jwtValidators__issuers: "http://lockaas:50053"
+      jwtValidators__jwksUrls: "http://lockaas:50053/.well-known/jwks"
       configFiles__clientPath: "/config/clients.json"
     volumes:
       - ./config/clients.json:/config/clients.json
@@ -40,5 +40,5 @@ services:
     security_opt:
       - no-new-privileges:true
     depends_on:
-      starterkit:
+      lockaas:
         condition: service_healthy

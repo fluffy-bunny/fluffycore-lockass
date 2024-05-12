@@ -1,0 +1,55 @@
+[
+  {
+    "createIndexes": "fluffycore_lockaas",
+    "indexes": [
+      {
+        "key": {
+          "exclusive.lockId": 1
+        },
+        "name": "not_unique_exclusive_lockId",
+        "unique": false,
+        "background": true,
+        "collation": {
+          "locale": "en_US",
+          "strength": 2
+        }
+      },
+      {
+        "key": {
+          "exclusive.expiresAt": 1
+        },
+        "name": "not_unique_exclusive_expiresAt",
+        "unique": false,
+        "background": true,
+        "collation": {
+          "locale": "en_US",
+          "strength": 2
+        }
+      },
+      {
+        "key": {
+          "shared.locks.lockId": 1
+        },
+        "name": "not_unique_shared_locks_lockId",
+        "unique": false,
+        "background": true,
+        "collation": {
+          "locale": "en_US",
+          "strength": 2
+        }
+      },
+      {
+        "key": {
+          "shared.locks.expiresAt": 1
+        },
+        "name": "not_unique_shared_locks_expiresAt",
+        "unique": false,
+        "background": true,
+        "collation": {
+          "locale": "en_US",
+          "strength": 2
+        }
+      }
+    ]
+  }
+]

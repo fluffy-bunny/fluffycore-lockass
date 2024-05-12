@@ -3,20 +3,19 @@ package runtime
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"net/http"
-	"os"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	internal_auth "github.com/fluffy-bunny/fluffycore-starterkit/internal/auth"
-	contracts_config "github.com/fluffy-bunny/fluffycore-starterkit/internal/contracts/config"
-	myechoserver "github.com/fluffy-bunny/fluffycore-starterkit/internal/myechoserver"
-	services "github.com/fluffy-bunny/fluffycore-starterkit/internal/services"
-	services_greeter "github.com/fluffy-bunny/fluffycore-starterkit/internal/services/greeter"
-	services_health "github.com/fluffy-bunny/fluffycore-starterkit/internal/services/health"
-	services_mystream "github.com/fluffy-bunny/fluffycore-starterkit/internal/services/mystream"
-	services_somedisposable "github.com/fluffy-bunny/fluffycore-starterkit/internal/services/somedisposable"
-	internal_version "github.com/fluffy-bunny/fluffycore-starterkit/internal/version"
+	internal_auth "github.com/fluffy-bunny/fluffycore-lockaas/internal/auth"
+	contracts_config "github.com/fluffy-bunny/fluffycore-lockaas/internal/contracts/config"
+	myechoserver "github.com/fluffy-bunny/fluffycore-lockaas/internal/myechoserver"
+	services "github.com/fluffy-bunny/fluffycore-lockaas/internal/services"
+	services_greeter "github.com/fluffy-bunny/fluffycore-lockaas/internal/services/greeter"
+	services_health "github.com/fluffy-bunny/fluffycore-lockaas/internal/services/health"
+	services_slockclient "github.com/fluffy-bunny/fluffycore-lockaas/internal/services/lockclient"
+	services_mystream "github.com/fluffy-bunny/fluffycore-lockaas/internal/services/mystream"
+	services_somedisposable "github.com/fluffy-bunny/fluffycore-lockaas/internal/services/somedisposable"
+
+	internal_version "github.com/fluffy-bunny/fluffycore-lockaas/internal/version"
 	fluffycore_async "github.com/fluffy-bunny/fluffycore/async"
 	fluffycore_contracts_ddprofiler "github.com/fluffy-bunny/fluffycore/contracts/ddprofiler"
 	fluffycore_contracts_middleware "github.com/fluffy-bunny/fluffycore/contracts/middleware"
@@ -28,14 +27,14 @@ import (
 	fluffycore_middleware_correlation "github.com/fluffy-bunny/fluffycore/middleware/correlation"
 	fluffycore_middleware_dicontext "github.com/fluffy-bunny/fluffycore/middleware/dicontext"
 	fluffycore_middleware_logging "github.com/fluffy-bunny/fluffycore/middleware/logging"
-	mocks_contracts_oauth2 "github.com/fluffy-bunny/fluffycore/mocks/contracts/oauth2"
-	mocks_oauth2_echo "github.com/fluffy-bunny/fluffycore/mocks/oauth2/echo"
+	core_runtime "github.com/fluffy-bunny/fluffycore/runtime"
 	fluffycore_services_ddprofiler "github.com/fluffy-bunny/fluffycore/services/ddprofiler"
 	fluffycore_utils_redact "github.com/fluffy-bunny/fluffycore/utils/redact"
 	status "github.com/gogo/status"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	async "github.com/reugn/async"
 	zerolog "github.com/rs/zerolog"
+	log "github.com/rs/zerolog/log"
 	codes "google.golang.org/grpc/codes"
 )
 
@@ -47,11 +46,9 @@ type (
 		configOptions *fluffycore_contracts_runtime.ConfigOptions
 		config        *contracts_config.Config
 
-		mockOAuth2Server       *mocks_oauth2_echo.MockOAuth2Service
-		mockOAuth2ServerFuture async.Future[fluffycore_async.AsyncResponse]
-		ddProfiler             fluffycore_contracts_ddprofiler.IDataDogProfiler
-		myEchoServerFuture     async.Future[fluffycore_async.AsyncResponse]
-		myEchoServerRuntime    *core_echo_runtime.Runtime
+		ddProfiler          fluffycore_contracts_ddprofiler.IDataDogProfiler
+		myEchoServerFuture  async.Future[fluffycore_async.AsyncResponse]
+		myEchoServerRuntime *core_echo_runtime.Runtime
 	}
 )
 
@@ -62,6 +59,29 @@ func (s *startup) SetRootContainer(container di.Container) {
 	s.RootContainer = container
 }
 func (s *startup) GetConfigOptions() *fluffycore_contracts_runtime.ConfigOptions {
+	log := log.With().Caller().Str("method", "GetConfigOptions").Logger()
+
+	// here we load a config file and merge it over the default.
+	initialConfigOptions := &fluffycore_contracts_runtime.ConfigOptions{
+		Destination: &contracts_config.InitialConfig{},
+		RootConfig:  contracts_config.ConfigDefaultJSON,
+	}
+	err := core_runtime.LoadConfig(initialConfigOptions)
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to load config")
+	}
+	err = onLoadCoreConfig(context.Background(),
+		initialConfigOptions.Destination.(*contracts_config.InitialConfig).ConfigFiles.CorePath)
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to onLoadCoreConfig")
+	}
+	defaultConfig := &contracts_config.Config{}
+	err = json.Unmarshal([]byte(contracts_config.ConfigDefaultJSON), defaultConfig)
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to unmarshal ConfigDefaultJSON")
+	}
+	log.Info().Interface("defaultConfig", defaultConfig).Msg("config after merge")
+
 	s.config = &contracts_config.Config{}
 	s.configOptions = &fluffycore_contracts_runtime.ConfigOptions{
 		Destination: s.config,
@@ -88,6 +108,7 @@ func (s *startup) ConfigureServices(ctx context.Context, builder di.ContainerBui
 	services_health.AddHealthService(builder)
 	services_greeter.AddGreeterService(builder)
 	services_somedisposable.AddScopedSomeDisposable(builder)
+	services_slockclient.AddSingletonLockClient(builder)
 	services_mystream.AddMyStreamService(builder)
 	issuerConfigs := &fluffycore_contracts_middleware_auth_jwt.IssuerConfigs{}
 	for idx := range s.config.JWTValidators.Issuers {
@@ -143,20 +164,6 @@ func (s *startup) Configure(ctx context.Context, rootContainer di.Container, una
 func (s *startup) OnPreServerStartup(ctx context.Context) error {
 	log := zerolog.Ctx(ctx).With().Str("method", "OnPreServerStartup").Logger()
 
-	clientsJSON, err := os.ReadFile(s.config.ConfigFiles.ClientPath)
-	var clients []mocks_contracts_oauth2.Client
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(clientsJSON, &clients)
-	if err != nil {
-		return err
-	}
-
-	log.Info().Interface("clients", clients).Msg("clients")
-	s.mockOAuth2Server = mocks_oauth2_echo.NewOAuth2TestServer(&mocks_contracts_oauth2.MockOAuth2Config{
-		Clients: clients,
-	})
 	s.myEchoServerRuntime = core_echo_runtime.New(myechoserver.NewStartup())
 	s.myEchoServerFuture = fluffycore_async.ExecuteWithPromiseAsync(func(promise async.Promise[fluffycore_async.AsyncResponse]) {
 		var err error
@@ -172,23 +179,6 @@ func (s *startup) OnPreServerStartup(ctx context.Context) error {
 			log.Error().Err(err).Msg("failed to start server")
 		}
 	})
-	s.mockOAuth2ServerFuture = fluffycore_async.ExecuteWithPromiseAsync(func(promise async.Promise[fluffycore_async.AsyncResponse]) {
-		var err error
-		defer func() {
-			promise.Success(&fluffycore_async.AsyncResponse{
-				Message: "End Serve - mockOAuth2Server",
-				Error:   err,
-			})
-		}()
-		log.Info().Msg("mockOAuth2Server starting up")
-		err = s.mockOAuth2Server.Start(fmt.Sprintf(":%d", s.config.OAuth2Port))
-		if err != nil && http.ErrServerClosed == err {
-			err = nil
-		}
-		if err != nil {
-			log.Error().Err(err).Msg("failed to start server")
-		}
-	})
 
 	s.ddProfiler = di.Get[fluffycore_contracts_ddprofiler.IDataDogProfiler](s.RootContainer)
 	s.ddProfiler.Start(ctx)
@@ -198,10 +188,6 @@ func (s *startup) OnPreServerStartup(ctx context.Context) error {
 // OnPreServerShutdown ...
 func (s *startup) OnPreServerShutdown(ctx context.Context) {
 	log := zerolog.Ctx(ctx).With().Str("method", "OnPreServerShutdown").Logger()
-	log.Info().Msg("mockOAuth2Server shutting down")
-	s.mockOAuth2Server.Shutdown(ctx)
-	s.mockOAuth2ServerFuture.Join()
-	log.Info().Msg("mockOAuth2Server shutdown complete")
 
 	log.Info().Msg("myEchoServerRuntime shutting down")
 	s.myEchoServerRuntime.Stop()

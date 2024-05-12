@@ -1,0 +1,18 @@
+[
+  {
+    "dropIndexes": "fluffycore_lockaas",
+    "index": "not_unique_exclusive_lockId"
+  },
+  {
+    "dropIndexes": "fluffycore_lockaas",
+    "index": "not_unique_exclusive_expiresAt"
+  },
+  {
+    "dropIndexes": "fluffycore_lockaas",
+    "index": "not_unique_shared_locks_lockId"
+  },
+  {
+    "dropIndexes": "fluffycore_lockaas",
+    "index": "not_unique_shared_locks_expiresAt"
+  }
+]
