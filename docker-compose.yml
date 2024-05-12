@@ -31,9 +31,34 @@ services:
       - ./configs/core.json:/config/core.json
     depends_on:
       mongodb:
-        condition: service_healthy      
+        condition: service_healthy    
+      lockaas-dbmigrate:
+        condition: service_completed_successfully  
     entrypoint: ["/app/server", "serve"]
-  
+
+  # lockaas DB MIGRATE
+  #====================================================
+  lockaas-dbmigrate:
+    extends:
+      file: ./docker-compose-common.yml
+      service: micro
+    image: fluffycore.lockaas:latest
+    container_name: "lockaas-dbmigrate"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    environment:
+      DATABASE: "mongodb://mongodb:27017"
+      DATABASE_NAME: "lockaas"
+      SOURCE: "file://dbmigrate/mongo"
+    entrypoint: ["/app/server", "migrate"]
+    command:
+      [
+        "--verbose",
+        "up",
+      ]
+      # migrate --source file://dbmigrate/mongo --database mongodb://localhost:27017/lockaas --verbose up
+ 
   mock-oauth2:
     extends:
       file: ./docker-compose-common.yml
