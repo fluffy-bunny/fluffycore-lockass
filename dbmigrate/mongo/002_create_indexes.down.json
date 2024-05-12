@@ -1,6 +1,10 @@
 [
   {
     "dropIndexes": "fluffycore_lockaas",
+    "index": "unique_resource"
+  },
+  {
+    "dropIndexes": "fluffycore_lockaas",
     "index": "not_unique_exclusive_lockId"
   },
   {

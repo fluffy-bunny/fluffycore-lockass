@@ -53,11 +53,8 @@ var ConfigDefaultJSON = []byte(`
 	"GRPC_GATEWAY_ENABLED": true,
 	"jwtValidators": {},
 	"mongoConfig": {
-		"mongoUrl": "mongodb://localhost:27017",
+		"mongoUrl": "NA",
 		"database": "lockaas"
-	},
-	"configFiles": {
-		"clientPath": "./config/clients.json"
 	},
 	"configFiles": {
         "corePath": "./config/core.json"

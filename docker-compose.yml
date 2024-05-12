@@ -26,7 +26,8 @@ services:
       ENABLE_GRPC_SERVER_REFLECTION: "true"
       jwtValidators__issuers: "http://mock-oauth2:9802"
       jwtValidators__jwksUrls: "http://mock-oauth2:9802/.well-known/jwks"
- 
+      configFiles__corePath: "/config/core.json"
+
     volumes:
       - ./configs/core.json:/config/core.json
     depends_on:

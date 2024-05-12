@@ -4,6 +4,19 @@
     "indexes": [
       {
         "key": {
+          "resource": 1
+        },
+        "name": "unique_resource",
+        "unique": true,
+        "sparse": true,
+        "background": true,
+        "collation": {
+          "locale": "en_US",
+          "strength": 2
+        }
+      },
+      {
+        "key": {
           "exclusive.lockId": 1
         },
         "name": "not_unique_exclusive_lockId",
