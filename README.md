@@ -1,6 +1,6 @@
 # fluffycore-lockaas
 
-starter kit for a fluffycore DI based application
+grpc wrapper for [mongo-lock](https://github.com/square/mongo-lock) packaged in a docker-image.
 
 ## Protos
 

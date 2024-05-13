@@ -7,11 +7,13 @@ import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	internal_auth "github.com/fluffy-bunny/fluffycore-lockaas/internal/auth"
 	contracts_config "github.com/fluffy-bunny/fluffycore-lockaas/internal/contracts/config"
+	contracts_lockclient "github.com/fluffy-bunny/fluffycore-lockaas/internal/contracts/lockclient"
 	myechoserver "github.com/fluffy-bunny/fluffycore-lockaas/internal/myechoserver"
 	services "github.com/fluffy-bunny/fluffycore-lockaas/internal/services"
 	services_health "github.com/fluffy-bunny/fluffycore-lockaas/internal/services/health"
 	services_lockaas "github.com/fluffy-bunny/fluffycore-lockaas/internal/services/lockaas"
 	services_lockclient "github.com/fluffy-bunny/fluffycore-lockaas/internal/services/lockclient"
+	services_purger "github.com/fluffy-bunny/fluffycore-lockaas/internal/services/purger"
 	internal_version "github.com/fluffy-bunny/fluffycore-lockaas/internal/version"
 	fluffycore_async "github.com/fluffy-bunny/fluffycore/async"
 	fluffycore_contracts_ddprofiler "github.com/fluffy-bunny/fluffycore/contracts/ddprofiler"
@@ -46,6 +48,8 @@ type (
 		ddProfiler          fluffycore_contracts_ddprofiler.IDataDogProfiler
 		myEchoServerFuture  async.Future[fluffycore_async.AsyncResponse]
 		myEchoServerRuntime *core_echo_runtime.Runtime
+		purger              contracts_lockclient.IPurger
+		cancel              context.CancelFunc
 	}
 )
 
@@ -104,6 +108,7 @@ func (s *startup) ConfigureServices(ctx context.Context, builder di.ContainerBui
 	fluffycore_services_ddprofiler.AddSingletonIProfiler(builder)
 	services_health.AddHealthService(builder)
 	services_lockaas.AddLockaasService(builder)
+	services_purger.AddSingletonPurger(builder)
 	services_lockclient.AddSingletonLockClient(builder)
 	issuerConfigs := &fluffycore_contracts_middleware_auth_jwt.IssuerConfigs{}
 	for idx := range s.config.JWTValidators.Issuers {
@@ -158,6 +163,7 @@ func (s *startup) Configure(ctx context.Context, rootContainer di.Container, una
 // OnPreServerStartup ...
 func (s *startup) OnPreServerStartup(ctx context.Context) error {
 	log := zerolog.Ctx(ctx).With().Str("method", "OnPreServerStartup").Logger()
+	ctx, s.cancel = context.WithCancel(ctx)
 
 	s.myEchoServerRuntime = core_echo_runtime.New(myechoserver.NewStartup())
 	s.myEchoServerFuture = fluffycore_async.ExecuteWithPromiseAsync(func(promise async.Promise[fluffycore_async.AsyncResponse]) {
@@ -177,13 +183,26 @@ func (s *startup) OnPreServerStartup(ctx context.Context) error {
 
 	s.ddProfiler = di.Get[fluffycore_contracts_ddprofiler.IDataDogProfiler](s.RootContainer)
 	s.ddProfiler.Start(ctx)
+
+	s.purger = di.Get[contracts_lockclient.IPurger](s.RootContainer)
+	err := s.purger.Start(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to start purger")
+		return err
+	}
 	return nil
 }
 
 // OnPreServerShutdown ...
 func (s *startup) OnPreServerShutdown(ctx context.Context) {
 	log := zerolog.Ctx(ctx).With().Str("method", "OnPreServerShutdown").Logger()
+	s.cancel()
+	if s.purger != nil {
+		log.Info().Msg("purger stopping")
+		s.purger.Stop(ctx)
+		log.Info().Msg("purger stopped")
 
+	}
 	log.Info().Msg("myEchoServerRuntime shutting down")
 	s.myEchoServerRuntime.Stop()
 	s.myEchoServerFuture.Join()

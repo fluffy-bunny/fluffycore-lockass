@@ -16,5 +16,10 @@ type (
 		Unlock(ctx context.Context, lockId string) ([]mongo_lock.LockStatus, error)
 		Status(ctx context.Context, f mongo_lock.Filter) ([]mongo_lock.LockStatus, error)
 		Renew(ctx context.Context, lockId string, ttl uint) ([]mongo_lock.LockStatus, error)
+		Purger(ctx context.Context) (mongo_lock.Purger, error)
+	}
+	IPurger interface {
+		Start(ctx context.Context) error
+		Stop(ctx context.Context) error
 	}
 )

@@ -20,7 +20,9 @@ type (
 		client     *driver_mongo.Client
 		collection *driver_mongo.Collection
 		lockClient *mongo_lock.Client
+		purger     mongo_lock.Purger
 		lock       sync.Mutex
+		lockPurger sync.Mutex
 	}
 )
 
@@ -38,10 +40,10 @@ func AddSingletonLockClient(cb di.ContainerBuilder) {
 }
 
 func (s *service) Collection(ctx context.Context) (*driver_mongo.Collection, error) {
-	//--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--
+	//--~--~--~--~--~--~-BARBED WIRE-~--~--~--~--~--~--~--~--~--~--
 	s.lock.Lock()
 	defer s.lock.Unlock()
-	//--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--
+	//--~--~--~--~--~--~-BARBED WIRE-~--~--~--~--~--~--~--~--~--~--
 	if s.client == nil {
 		ctx, cancel := context.WithTimeout(ctx, time.Second*30)
 		defer cancel()
@@ -64,10 +66,10 @@ func (s *service) Collection(ctx context.Context) (*driver_mongo.Collection, err
 }
 func (s *service) LockClient(ctx context.Context) (*mongo_lock.Client, error) {
 	doGetLockClient := func() *mongo_lock.Client {
-		//--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--
+		//--~--~--~--~--~--~-BARBED WIRE-~--~--~--~--~--~--~--~--~--~--
 		s.lock.Lock()
 		defer s.lock.Unlock()
-		//--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--
+		//--~--~--~--~--~--~-BARBED WIRE-~--~--~--~--~--~--~--~--~--~--
 		if s.lockClient != nil {
 			return s.lockClient
 		}
@@ -80,10 +82,10 @@ func (s *service) LockClient(ctx context.Context) (*mongo_lock.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	//--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--
+	//--~--~--~--~--~--~-BARBED WIRE-~--~--~--~--~--~--~--~--~--~--
 	s.lock.Lock()
 	defer s.lock.Unlock()
-	//--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--
+	//--~--~--~--~--~--~-BARBED WIRE-~--~--~--~--~--~--~--~--~--~--
 	lockClient := mongo_lock.NewClient(collection)
 	s.lockClient = lockClient
 	return lockClient, nil
@@ -128,4 +130,20 @@ func (s *service) Renew(ctx context.Context, lockId string, ttl uint) ([]mongo_l
 		return nil, err
 	}
 	return lockClient.Renew(ctx, lockId, ttl)
+}
+func (s *service) Purger(ctx context.Context) (mongo_lock.Purger, error) {
+	//--~--~--~--~--~--~-BARBED WIRE-~--~--~--~--~--~--~--~--~--~--
+	s.lockPurger.Lock()
+	defer s.lockPurger.Unlock()
+	//--~--~--~--~--~--~-BARBED WIRE-~--~--~--~--~--~--~--~--~--~--
+	if s.purger != nil {
+		return s.purger, nil
+	}
+	lockClient, err := s.LockClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+	purger := mongo_lock.NewPurger(lockClient)
+	s.purger = purger
+	return purger, nil
 }
