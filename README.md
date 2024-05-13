@@ -6,7 +6,7 @@ grpc wrapper for [mongo-lock](https://github.com/square/mongo-lock) packaged in 
 
 The [lockass.proto](./proto/lockaas/lockaas.proto) file is the proto file that defines the service.
 
-```protobuf
+ 
 
 Note: I had to run bash on windows so I could pass `./api/proto/**/*.proto`
 
@@ -92,4 +92,36 @@ You can copy any number of migration folders from any db you want. i.e. if you h
 
 ```bash
 go run .\cmd\server\ migrate --source file://dbmigrate/mongo --database mongodb://localhost:27017/lockaas --verbose up
+```
+
+## Usage
+
+I am using postman.
+![alt text](postman.png)  
+
+### Exclusive Lock
+
+```json
+{
+    "lock_details": {
+        "comment": "consectetur ad voluptate cupidatat",
+        "host": "idaho",
+        "owner": "herb",
+        "t_t_l_seconds":  20
+    },
+    "lock_id": "lock000",
+    "resource_name": "connector:foobar"
+}
+```
+
+**SUCCESS**  
+
+```json
+{}
+```
+
+**FAILURE**  
+
+```error
+Status code: 6 ALREADY_EXISTS
 ```

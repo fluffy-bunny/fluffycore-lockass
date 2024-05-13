@@ -84,6 +84,10 @@ func (s *service) ExclusiveLock(ctx context.Context, request *proto_lockaas.Excl
 		request.LockId,
 		details)
 	if err != nil {
+		if mongo_lock.ErrAlreadyLocked == err {
+			// well known error, no need to log it.
+			return nil, status.Error(codes.AlreadyExists, err.Error())
+		}
 		log.Error().Err(err).Msg("ExclusiveLock")
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -149,6 +153,10 @@ func (s *service) Unlock(ctx context.Context, request *proto_lockaas.UnlockReque
 	}
 	_, err = s.mongoLockClient.Unlock(ctx, request.LockId)
 	if err != nil {
+		if mongo_lock.ErrLockNotFound == err {
+			// well known error, no need to log it.
+			return nil, status.Error(codes.NotFound, err.Error())
+		}
 		log.Error().Err(err).Msg("Unlock")
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -244,6 +252,10 @@ func (s *service) Renew(ctx context.Context, request *proto_lockaas.RenewRequest
 	}
 	lstatuss, err := s.mongoLockClient.Renew(ctx, request.LockId, uint(request.TTLSeconds))
 	if err != nil {
+		if mongo_lock.ErrLockNotFound == err {
+			// well known error, no need to log it.
+			return nil, status.Error(codes.NotFound, err.Error())
+		}
 		log.Error().Err(err).Msg("Renew")
 		return nil, status.Error(codes.Internal, err.Error())
 	}
