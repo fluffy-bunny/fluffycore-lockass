@@ -4,6 +4,10 @@ grpc wrapper for [mongo-lock](https://github.com/square/mongo-lock) packaged in 
 
 ## Protos
 
+The [lockass.proto](./proto/lockaas/lockaas.proto) file is the proto file that defines the service.
+
+```protobuf
+
 Note: I had to run bash on windows so I could pass `./api/proto/**/*.proto`
 
 ```bash
