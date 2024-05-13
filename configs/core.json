@@ -1,0 +1,6 @@
+{
+    "mongoConfig": {
+        "mongoUrl": "mongodb://mongodb:27017",
+        "database": "lockaas"
+    }
+}

@@ -1,7 +1,7 @@
 package auth
 
 import (
-	proto_helloworld "github.com/fluffy-bunny/fluffycore-starterkit/proto/helloworld"
+	proto_lockaas "github.com/fluffy-bunny/fluffycore-lockaas/proto/lockaas"
 	contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	services_common_claimsprincipal "github.com/fluffy-bunny/fluffycore/services/common/claimsprincipal"
 )
@@ -11,9 +11,12 @@ var writeEndpoints = []string{
 }
 var noAuthEndpoints = []string{
 	"/grpc.health.v1.Health/Check",
-	proto_helloworld.Greeter_SayHello_FullMethodName,
-	proto_helloworld.MyStreamService_RequestPoints_FullMethodName,
-	proto_helloworld.MyStreamService_StreamPoints_FullMethodName,
+
+	proto_lockaas.Lockaas_ExclusiveLock_FullMethodName,
+	proto_lockaas.Lockaas_SharedLock_FullMethodName,
+	proto_lockaas.Lockaas_Unlock_FullMethodName,
+	proto_lockaas.Lockaas_Renew_FullMethodName,
+	proto_lockaas.Lockaas_Status_FullMethodName,
 }
 
 func BuildGrpcEntrypointPermissionsClaimsMap() map[string]contracts_common.IEntryPointConfig {

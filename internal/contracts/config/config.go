@@ -10,8 +10,16 @@ type (
 		Issuers  []string `json:"issuers"`
 		JWKSURLS []string `json:"jwksUrls"`
 	}
+
 	ConfigFiles struct {
-		ClientPath string `json:"clientPath"`
+		CorePath string `json:"corePath"`
+	}
+	InitialConfig struct {
+		ConfigFiles ConfigFiles `json:"configFiles"`
+	}
+	MongoConfig struct {
+		MongoUrl string `json:"mongoUrl"`
+		Database string `json:"database"`
 	}
 )
 type EchoConfig struct {
@@ -21,12 +29,11 @@ type Config struct {
 	fluffycore_contracts_config.CoreConfig `mapstructure:",squash"`
 
 	ConfigFiles      ConfigFiles                             `json:"configFiles"`
-	CustomString     string                                  `json:"customString"`
-	SomeSecret       string                                  `json:"someSecret" redact:"true"`
 	OAuth2Port       int                                     `json:"oauth2Port"`
 	JWTValidators    JWTValidators                           `json:"jwtValidators"`
 	DDProfilerConfig *fluffycore_contracts_ddprofiler.Config `json:"ddProfilerConfig"`
 	Echo             EchoConfig                              `json:"echo"`
+	MongoConfig      MongoConfig                             `json:"mongoConfig"`
 }
 
 // ConfigDefaultJSON default json
@@ -39,13 +46,15 @@ var ConfigDefaultJSON = []byte(`
 	"PORT": 50051,
 	"REST_PORT": 50052,
 	"oauth2Port": 50053,
-	"customString": "some default value",
-	"someSecret": "password",
 	"GRPC_GATEWAY_ENABLED": true,
 	"jwtValidators": {},
-	"configFiles": {
-		"clientPath": "./config/clients.json"
+	"mongoConfig": {
+		"mongoUrl": "NA",
+		"database": "lockaas"
 	},
+	"configFiles": {
+        "corePath": "./config/core.json"
+     },
 	"ddProfilerConfig": {
 		"enabled": false,
 		"serviceName": "in-environment",

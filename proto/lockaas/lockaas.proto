@@ -1,0 +1,144 @@
+syntax = "proto3";
+
+ 
+option go_package = "github.com/fluffy-bunny/fluffycore-lockaas/proto/lockaas";
+
+package helloworld;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+// The greeting service definition.
+service Lockaas {
+    // ExclusiveLock
+    rpc ExclusiveLock (ExclusiveLockRequest) returns (ExclusiveLockResponse) {
+        option (google.api.http) = {
+            post: "/v1/lockaas/exclusive-lock"
+            body: "*"
+        };
+    }
+    // Renew
+    rpc Renew (RenewRequest) returns (RenewResponse) {
+        option (google.api.http) = {
+            post: "/v1/lockaas/renew"
+            body: "*"
+        };
+    }
+    // SharedLock
+    rpc SharedLock (SharedLockRequest) returns (SharedLockResponse) {
+        option (google.api.http) = {
+            post: "/v1/lockaas/shared-lock"
+            body: "*"
+        };
+    }
+    // Status
+    rpc Status (StatusRequest) returns (StatusResponse) {
+        option (google.api.http) = {
+            post: "/v1/lockaas/status"
+            body: "*"
+        };
+    }
+    // Unlock
+    rpc Unlock (UnlockRequest) returns (UnlockResponse) {
+        option (google.api.http) = {
+            post: "/v1/lockaas/unlock"
+            body: "*"
+        };
+    }
+
+
+}
+message RenewRequest {
+    string lock_id = 1;
+    int64 t_t_l_seconds = 2;
+}
+message RenewResponse {
+    repeated LockStatus lock_status = 1;
+}
+message LockStatus   {
+	// The name of the resource that the lock is on.
+	string resouce = 1;
+	// The id of the lock.
+    string lock_id = 2;
+	// The type of the lock ("exclusive" or "shared")
+	string type = 3;
+	// The name of the user who created the lock.
+	string owner = 4;
+	// The host that the lock was created from.
+	string host = 5;
+	// Comment to add context for the lock.
+	string comment = 6;
+	// The time that the lock was created at.
+    google.protobuf.Timestamp created_at = 7;
+
+ 	// The time that the lock was renewed at, if applicable.
+    google.protobuf.Timestamp  renewed_at = 8;
+	// The TTL for the lock, in seconds. A negative value means that the
+	// lock does not have a TTL.
+	int64 t_t_l_seconds = 9;
+	
+}
+message UnlockRequest {
+    string lock_id = 1;
+}
+message UnlockResponse {
+    repeated LockStatus lock_status = 1;
+}
+message Filter   {
+    // Only include locks created before this time.
+    google.protobuf.Timestamp created_before = 1;
+    // Only include locks created after this time.
+    google.protobuf.Timestamp created_after = 2;
+    // Only include locks with a TTL less than this value, in seconds.
+    google.protobuf.Int64Value t_t_llt =  3;
+    // Only include locks with a TTL greater than or equal to this value, in seconds.
+    google.protobuf.Int64Value t_t_lgte = 4;
+    // Only include locks on this resource.
+    google.protobuf.StringValue resource = 5;
+    // Only include locks with this lockId.
+    google.protobuf.StringValue lock_id = 6;
+    // Only include locks with this owner.
+    google.protobuf.StringValue owner = 7;
+}
+message StatusRequest {
+    Filter filter = 1;
+}
+message StatusResponse {
+    repeated LockStatus lock_status = 1;
+}
+ // LockDetails contains fields that are used when creating a lock.
+message LockDetails  {
+	// The user that is creating the lock.
+    string owner = 1;
+	// The host that the lock is being created from.
+	string host = 2;
+	// Comment to add context for the lock.
+	string comment = 3; 
+	// The time to live (TTL) for the lock, in seconds. Setting this to 0
+	// means that the lock will not have a TTL.
+	int64 t_t_l_seconds = 4;
+}
+
+// The request message containing the user's name.
+message ExclusiveLockRequest {
+  string resource_name = 1;
+  string lock_id = 2;
+  LockDetails lock_details = 3;
+}
+message ExclusiveLockResponse {
+ 
+}
+
+message SharedLockRequest {
+  string resource_name = 1;
+  string lock_id = 2;
+  LockDetails lock_details = 3;
+  uint32 max_concurrent = 4;
+}
+message SharedLockResponse {
+  
+} 
+ 
+
+

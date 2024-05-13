@@ -1,19 +1,18 @@
-version: "3.8"
-
+ 
 services:
-  starterkit:
-    container_name: starterkit
+  lockaas:
+    container_name: lockaas
     extends:
       file: ./docker-compose-common.yml
       service: micro
-    image: fluffycore.starterkit:latest
+    image: fluffycore.lockaas:latest
     ports:
       - "50051:50051"
       - "50052:50052"
       - "50053:50053"
       - "9044:9044"
     environment:
-      APPLICATION_NAME: "starterkit"
+      APPLICATION_NAME: "lockaas"
       APPLICATION_ENVIRONMENT: "DOCKER"
       LOG_LEVEL": "debug"
       PRETTY_LOG: "true"
@@ -24,21 +23,83 @@ services:
       customString: "In Flames"
       someSecret: "1234567890"
       ENABLE_GRPC_SERVER_REFLECTION: "true"
-      jwtValidators__issuers: "http://starterkit:50053"
-      jwtValidators__jwksUrls: "http://starterkit:50053/.well-known/jwks"
-      configFiles__clientPath: "/config/clients.json"
+      jwtValidators__issuers: "http://mock-oauth2:9802"
+      jwtValidators__jwksUrls: "http://mock-oauth2:9802/.well-known/jwks"
+      configFiles__corePath: "/config/core.json"
+
     volumes:
-      - ./config/clients.json:/config/clients.json
+      - ./configs/core.json:/config/core.json
+    depends_on:
+      mongodb:
+        condition: service_healthy    
+      lockaas-dbmigrate:
+        condition: service_completed_successfully  
     entrypoint: ["/app/server", "serve"]
 
-  whoami:
-    container_name: whoami
+  # lockaas DB MIGRATE
+  #====================================================
+  lockaas-dbmigrate:
     extends:
       file: ./docker-compose-common.yml
       service: micro
-    image: containous/whoami
-    security_opt:
-      - no-new-privileges:true
+    image: fluffycore.lockaas:latest
+    container_name: "lockaas-dbmigrate"
     depends_on:
-      starterkit:
+      mongodb:
         condition: service_healthy
+    environment:
+      DATABASE: "mongodb://mongodb:27017"
+      DATABASE_NAME: "lockaas"
+      SOURCE: "file://dbmigrate/mongo"
+    entrypoint: ["/app/server", "migrate"]
+    command:
+      [
+        "--verbose",
+        "up",
+      ]
+      # migrate --source file://dbmigrate/mongo --database mongodb://localhost:27017/lockaas --verbose up
+ 
+  mock-oauth2:
+    extends:
+      file: ./docker-compose-common.yml
+      service: micro
+    container_name: mock-oauth2
+    image: ghstahl/fluffycore.starterkit:latest
+    ports:
+      - "9802:50053"
+    environment:
+      APPLICATION_NAME: "mydevoauthserver"
+      APPLICATION_ENVIRONMENT: "DOCKER"
+      LOG_LEVEL": "debug"
+      PRETTY_LOG: "true"
+      OAUTH2_PORT: "50053"
+      configFiles__clientPath: "/config/clients.json"
+    volumes:
+      - ./configs/mockoauth2/clients.json:/config/clients.json
+    entrypoint: ["/app/server", "serve"]
+
+  mongodb:
+    extends:
+      file: ./docker-compose-common.yml
+      service: micro
+    # TODO: due to https://github.com/bitnami/charts/issues/3635 we use this
+    # image: "bitnami/mongodb:4.4.13-debian-10-r31"
+    image: "ghcr.io/zcube/bitnami-compat/mongodb:6.0"
+    container_name: "mongodb"
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/bitnami/mongodb
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    healthcheck:
+      test: [ "CMD-SHELL", "mongosh --port 27017 --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'" ]
+      start_period: 20s
+      interval: 5s
+      timeout: 5s
+      retries: 10
+#====================================================
+# VOLUMES
+#====================================================
+volumes:
+  mongodb-data:

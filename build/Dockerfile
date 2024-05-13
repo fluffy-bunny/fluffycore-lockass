@@ -21,7 +21,7 @@ RUN --mount=type=ssh go mod download
 # Add remaining code
 COPY . .
 
-ARG location=github.com/fluffy-bunny/fluffycore-starterkit/internal/version
+ARG location=github.com/fluffy-bunny/fluffycore-lockaas/internal/version
 ARG commit=AFFE
 ARG version=0.0.0
 ARG date=19700101
@@ -58,6 +58,7 @@ ENV THEBINARY=${THEBINARY}
 
 WORKDIR /app
 COPY --from=build /build/${THEBINARY} ./
+COPY dbmigrate                  /app/dbmigrate
 RUN mkdir /static
 COPY ./cmd/server/static ./static/
 

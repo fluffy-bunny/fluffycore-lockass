@@ -2,11 +2,11 @@ package myechoserver
 
 import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_config "github.com/fluffy-bunny/fluffycore-starterkit/internal/contracts/config"
-	services "github.com/fluffy-bunny/fluffycore-starterkit/internal/services"
-	services_handlers_healthz "github.com/fluffy-bunny/fluffycore-starterkit/internal/services/echo/handlers/healthz"
-	services_handlers_home "github.com/fluffy-bunny/fluffycore-starterkit/internal/services/echo/handlers/home"
-	services_handlers_swagger "github.com/fluffy-bunny/fluffycore-starterkit/internal/services/echo/handlers/swagger"
+	contracts_config "github.com/fluffy-bunny/fluffycore-lockaas/internal/contracts/config"
+	services "github.com/fluffy-bunny/fluffycore-lockaas/internal/services"
+	services_handlers_healthz "github.com/fluffy-bunny/fluffycore-lockaas/internal/services/echo/handlers/healthz"
+	services_handlers_home "github.com/fluffy-bunny/fluffycore-lockaas/internal/services/echo/handlers/home"
+	services_handlers_swagger "github.com/fluffy-bunny/fluffycore-lockaas/internal/services/echo/handlers/swagger"
 	fluffycore_contracts_runtime "github.com/fluffy-bunny/fluffycore/contracts/runtime"
 	contracts_startup "github.com/fluffy-bunny/fluffycore/echo/contracts/startup"
 	services_startup "github.com/fluffy-bunny/fluffycore/echo/services/startup"
